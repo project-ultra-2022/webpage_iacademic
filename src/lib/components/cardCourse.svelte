@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from 'flowbite-svelte';
-	import { cart } from '../stores/cart';
+	import { cart, cartDrawerOpen } from '../stores/cart';
 	import { onMount } from 'svelte';
 	import { ArrowRightOutline } from 'flowbite-svelte-icons';
 	import { formatDate } from '$lib/utils/format';
@@ -26,6 +26,8 @@
 
 	const addToCart = () => {
 		cart.addItem({ id, nameCourse, price, AI, initialDate, finishDate });
+		// Abrir el carrito automáticamente
+		cartDrawerOpen.set(true);
 	};
 </script>
 
