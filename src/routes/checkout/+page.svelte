@@ -8,6 +8,7 @@
 
 	let cartItems: BaseCourse[] = [];
 	let cartTotal = '';
+	let totalAmount = 0;
 
 	// Datos del formulario
 	let formData = {
@@ -28,6 +29,7 @@
 	];
 
 	let isSubmitting = false;
+	let errorMessage = '';
 
 	onMount(() => {
 		const unsubscribe = cart.subscribe((items) => {
@@ -43,6 +45,7 @@
 			const price = parseInt(item.price);
 			return sum + price;
 		}, 0);
+		totalAmount = total;
 		cartTotal = formatCurrency(total);
 
 		return unsubscribe;
@@ -50,6 +53,7 @@
 
 	async function handleSubmit() {
 		isSubmitting = true;
+		errorMessage = '';
 
 		// Validación básica
 		if (
@@ -60,29 +64,162 @@
 			!formData.email ||
 			!formData.dateBirth
 		) {
-			alert('Por favor completa todos los campos');
+			errorMessage = 'Por favor completa todos los campos';
 			isSubmitting = false;
 			return;
 		}
 
 		try {
-			// Aquí puedes agregar la lógica para enviar los datos al servidor
-			console.log('Datos del formulario:', formData);
-			console.log('Fecha en formato correcto:', formData.dateBirth); // Formato: "YYYY-MM-DD"
-			console.log('Curso:', cartItems[0]);
+			console.log('Enviando datos al backend...');
 
-			// Simulamos un delay de envío
-			await new Promise((resolve) => setTimeout(resolve, 1000));
+			// Enviar datos al backend para crear la transacción
+			const response = await fetch('/api/wompi/create-transaction', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					customerData: formData,
+					cartItems: cartItems,
+					totalAmount: totalAmount
+				})
+			});
 
-			// Redirigir a página de confirmación o payment
-			alert('Datos guardados correctamente. Redirigiendo al pago...');
-			// goto('/payment'); // Si tienes una página de pago
+			const result = await response.json();
+
+			if (!response.ok) {
+				throw new Error(result.error || 'Error al procesar el pago');
+			}
+
+			console.log('Transacción creada exitosamente:', result);
+
+			if (result.checkoutUrl) {
+				// Si Wompi devuelve una URL de checkout, redirigir
+				window.location.href = result.checkoutUrl;
+			} else {
+				// Si tenemos los datos del widget, usar el widget embebido
+				await initializePaymentWidget(result);
+			}
 		} catch (error) {
-			console.error('Error al enviar el formulario:', error);
-			alert('Error al procesar la información. Inténtalo de nuevo.');
-		} finally {
+			console.error('Error al procesar el pago:', error);
+			errorMessage = error.message || 'Error al procesar la información. Inténtalo de nuevo.';
 			isSubmitting = false;
 		}
+	}
+
+	async function initializePaymentWidget(transactionData: any) {
+		try {
+			// Cargar el script de Wompi si no está cargado
+			await loadWompiScript();
+
+			console.log('Inicializando widget de pago para referencia:', transactionData.reference);
+
+			// Configurar el widget con los datos del backend
+			const widgetConfig: Record<string, any> = {
+				currency: transactionData.currency || 'COP',
+				amountInCents: transactionData.amountInCents,
+				reference: transactionData.reference,
+				publicKey: transactionData.publicKey,
+				redirectUrl: transactionData.redirectUrl,
+				customerData: transactionData.customerData
+			};
+
+			// Agregar acceptance token si está disponible
+			if (transactionData.acceptanceToken) {
+				widgetConfig.acceptanceToken = transactionData.acceptanceToken;
+				console.log('Acceptance token agregado');
+			}
+
+			// Agregar firma de integridad (CRÍTICO - formato específico de Wompi)
+			if (transactionData.signature) {
+				// Según documentación de Wompi, la firma debe ir en este formato:
+				widgetConfig.signature = {
+					integrity: transactionData.signature
+				};
+				console.log('Firma de integridad agregada en formato correcto:', {
+					integrity: transactionData.signature
+				});
+			} else {
+				console.error('⚠️ FIRMA DE INTEGRIDAD FALTANTE - esto causará error');
+			}
+
+			// Asegurar que tenemos todos los campos requeridos
+			const requiredFields = ['publicKey', 'amountInCents', 'reference', 'currency'];
+			const missingFields = requiredFields.filter((field) => !widgetConfig[field]);
+
+			if (missingFields.length > 0) {
+				throw new Error(`Campos requeridos faltantes: ${missingFields.join(', ')}`);
+			}
+
+			console.log('Widget config final:', widgetConfig);
+
+			const checkout = new (window as any).WidgetCheckout(widgetConfig);
+
+			checkout.open((result: any) => {
+				console.log('Resultado del pago:', result);
+				handlePaymentResult(result);
+			});
+		} catch (error) {
+			console.error('Error al inicializar widget:', error);
+			errorMessage = 'Error al cargar el sistema de pago. Inténtalo de nuevo.';
+			isSubmitting = false;
+		}
+	}
+
+	function handlePaymentResult(result: any) {
+		if (result.transaction?.status === 'APPROVED') {
+			// Pago exitoso
+			alert('¡Pago realizado exitosamente! Se ha enviado la confirmación a tu correo.');
+			cart.clear();
+			goto('/courses');
+		} else if (result.transaction?.status === 'DECLINED') {
+			// Pago rechazado
+			alert('El pago fue rechazado. Por favor, verifica tus datos e intenta nuevamente.');
+			isSubmitting = false;
+		} else {
+			// Pago cancelado o pendiente
+			console.log('Pago cancelado o pendiente:', result);
+			isSubmitting = false;
+		}
+	}
+
+	function loadWompiScript(): Promise<void> {
+		return new Promise((resolve, reject) => {
+			// Verificar si el script ya está cargado
+			if (typeof (window as any).WidgetCheckout !== 'undefined') {
+				resolve();
+				return;
+			}
+
+			// Si ya existe el script, esperar a que cargue
+			if (document.getElementById('wompi-widget-script')) {
+				const checkInterval = setInterval(() => {
+					if (typeof (window as any).WidgetCheckout !== 'undefined') {
+						clearInterval(checkInterval);
+						resolve();
+					}
+				}, 100);
+				return;
+			}
+
+			const script = document.createElement('script');
+			script.id = 'wompi-widget-script';
+			script.src = 'https://checkout.wompi.co/widget.js';
+			script.async = true;
+
+			script.onload = () => {
+				setTimeout(() => {
+					if (typeof (window as any).WidgetCheckout !== 'undefined') {
+						resolve();
+					} else {
+						reject(new Error('Widget no disponible'));
+					}
+				}, 300);
+			};
+
+			script.onerror = () => reject(new Error('Error al cargar script'));
+			document.head.appendChild(script);
+		});
 	}
 </script>
 
@@ -178,10 +315,26 @@
 					<Button
 						type="submit"
 						disabled={isSubmitting}
-						class="mt-6 w-full bg-[#5b49d1] hover:bg-[#5b49d1]/80"
+						class="mt-6 w-full bg-[#5b49d1] hover:bg-[#5b49d1]/80 disabled:opacity-50"
 					>
 						{isSubmitting ? 'Procesando...' : 'Continuar al Pago'}
 					</Button>
+
+					{#if errorMessage}
+						<div class="mt-4 rounded-lg bg-red-900/20 p-4 text-center">
+							<p class="text-sm text-red-200">
+								❌ {errorMessage}
+							</p>
+						</div>
+					{/if}
+
+					{#if isSubmitting}
+						<div class="mt-4 rounded-lg bg-blue-900/20 p-4 text-center">
+							<p class="text-sm text-blue-200">
+								� Procesando tu información y preparando el pago...
+							</p>
+						</div>
+					{/if}
 				</form>
 			</div>
 
