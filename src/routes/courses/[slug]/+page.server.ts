@@ -1,14 +1,16 @@
 import type { PageServerLoad } from './$types';
 import { formatDate, formatHour } from '$lib/utils/format';
 import type { BaseCourse, ScheduledCourse } from '$lib/types';
+import { env } from '$env/dynamic/private';
 
 export const prerender = true;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const { slug } = params;
+	const ORCHESTRATOR_URL = env.NEXT_PUBLIC_ORCHESTRATOR_URL || 'https://apineocentic.net:4000';
 
-	const response = await fetch(`https://apineocentic.net:4000/v2/public-courses/${slug}`);
+	const response = await fetch(ORCHESTRATOR_URL + `/v2/public-courses/${slug}`);
 	if (!response.ok) {
 		throw new Error('Error al obtener los datos del API');
 	}

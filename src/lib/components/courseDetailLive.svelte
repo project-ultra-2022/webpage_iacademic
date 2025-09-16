@@ -9,7 +9,7 @@
 	} from 'flowbite-svelte-icons';
 	import type { BaseCourse } from '$lib/types';
 	import { formatCurrency } from '$lib/utils/format';
-	import { cart } from '$lib/stores/cart';
+	import { cart, cartDrawerOpen } from '$lib/stores/cart';
 	import { afterUpdate, onMount } from 'svelte';
 
 	export let courseTitle: string;
@@ -41,10 +41,11 @@
 	});
 
 	function handleAddToCart() {
-		if (!isInCart) {
-			cart.addItem(course);
-			checkCartStatus();
-		}
+		// Con el nuevo comportamiento, siempre añadimos/reemplazamos el curso en el carrito
+		cart.addItem(course);
+		checkCartStatus();
+		// Abrir el carrito automáticamente
+		cartDrawerOpen.set(true);
 	}
 </script>
 
@@ -71,9 +72,10 @@
 					on:click={handleAddToCart}
 				>
 					{#if isInCart}
-						Curso agregado al carrito
+						<BadgeCheckOutline class="ms-1 h-6 w-6" />
+						Curso en el carrito
 					{:else}
-						Añadir al carrito
+						Comprar curso
 						<CartOutline class="ms-1 h-6 w-6" />
 					{/if}
 				</button>

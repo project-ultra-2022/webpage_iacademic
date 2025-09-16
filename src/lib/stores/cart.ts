@@ -1,6 +1,9 @@
 import type { BaseCourse } from '$lib/types';
 import { writable } from 'svelte/store';
 
+// Store para controlar la visibilidad del drawer del carrito
+export const cartDrawerOpen = writable(false);
+
 function createCart() {
 	let storedCart: BaseCourse[] = [];
 
@@ -29,12 +32,16 @@ function createCart() {
 	return {
 		subscribe,
 		addItem: (item: BaseCourse) =>
-			update((cart) => {
-				// Ahora usamos key en lugar de id para la comparación
-				if (cart.some((existingItem) => existingItem.key === item.key)) {
-					return cart;
-				}
-				const updatedCart = [...cart, item];
+			update(() => {
+				// El carrito solo puede contener un elemento, reemplazamos el contenido
+				const updatedCart = [item];
+				updateLocalStorage(updatedCart);
+				return updatedCart;
+			}),
+		updateItem: (item: BaseCourse) =>
+			update(() => {
+				// Actualizar el elemento existente en el carrito
+				const updatedCart = [item];
 				updateLocalStorage(updatedCart);
 				return updatedCart;
 			}),

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	const VITE_CAPTCHA_SITE_KEY = import.meta.env.VITE_CAPTCHA_SITE_KEY;
+	const VITE_API_URL = import.meta.env.VITE_API_URL;
 	const courses = [
 		{
 			category: 'Scrum',
@@ -72,7 +73,7 @@
 
 		data['g-recaptcha-response'] = captchaToken;
 		try {
-			const response = await fetch('https://apineocentic.net:4000/v2/send-emails', {
+			const response = await fetch(VITE_API_URL, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

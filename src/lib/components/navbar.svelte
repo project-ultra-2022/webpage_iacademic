@@ -13,7 +13,7 @@
 	} from 'flowbite-svelte';
 	import { CartOutline, ChevronDownOutline } from 'flowbite-svelte-icons';
 	import RegisterMark from './registerMark.svelte';
-	import { cart } from '../stores/cart';
+	import { cart, cartDrawerOpen } from '../stores/cart';
 	import { onMount } from 'svelte';
 	import { sineIn } from 'svelte/easing';
 	import { formatCurrency, formatDate } from '$lib/utils/format';
@@ -64,6 +64,11 @@
 			cartCount = items.length;
 			cartTotal = calculateTotal(items);
 		});
+
+		// Sincronizar el store del drawer con la variable local
+		cartDrawerOpen.subscribe((isOpen) => {
+			hidden = !isOpen;
+		});
 	});
 
 	function calculateTotal(items: BaseCourse[]): string {
@@ -85,7 +90,7 @@
 	<div class="flex items-center space-x-4 md:order-2">
 		<button
 			class="relative flex items-center"
-			on:click={() => (hidden = false)}
+			on:click={() => cartDrawerOpen.set(true)}
 			aria-label="Carrito de compras"
 		>
 			<CartOutline class="h-8 w-8 text-white" />
@@ -181,9 +186,9 @@
 >
 	<div class="flex items-center justify-between border-b border-gray-800 p-4">
 		<Heading tag="h2" customSize="text-lg">
-			{cartCount > 0 ? 'Cursos agregados' : 'Carrito vacío'}
+			{cartCount > 0 ? 'Curso agregado' : 'Carrito vacío'}
 		</Heading>
-		<CloseButton on:click={() => (hidden = true)} />
+		<CloseButton on:click={() => cartDrawerOpen.set(false)} />
 	</div>
 
 	{#if cartCount > 0}
@@ -208,18 +213,20 @@
 
 		<div class="border-t border-gray-800 p-4">
 			<p class="text-base font-normal">Total: {cartTotal} ({cartCount})</p>
-			<button
-				class="mt-6 rounded-lg bg-[#5b49d1] px-4 py-2 text-base font-semibold text-white hover:bg-[#5b49d1]/70"
+			<a
+				href="/checkout"
+				on:click={() => cartDrawerOpen.set(false)}
+				class="mt-6 block rounded-lg bg-[#5b49d1] px-4 py-2 text-center text-base font-semibold text-white hover:bg-[#5b49d1]/70"
 			>
 				Continuar compra
-			</button>
+			</a>
 		</div>
 	{:else}
 		<div class="flex flex-col items-center justify-center p-8 text-center">
 			<p class="text-lg font-semibold text-gray-300">Tu carrito está vacío</p>
 			<p class="text-sm text-gray-400">Aún no has agregado ningún curso.</p>
 			<a
-				on:click={() => (hidden = true)}
+				on:click={() => cartDrawerOpen.set(false)}
 				href="/courses"
 				class="mt-6 rounded-lg bg-[#5b49d1] px-4 py-2 text-base font-semibold text-white hover:bg-[#5b49d1]/80"
 			>
