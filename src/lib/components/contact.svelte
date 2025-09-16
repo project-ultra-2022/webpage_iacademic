@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	const VITE_CAPTCHA_SITE_KEY = import.meta.env.VITE_CAPTCHA_SITE_KEY;
+	const VITE_API_URL = import.meta.env.VITE_API_URL;
 	const courses = [
 		{
 			category: 'Scrum',
