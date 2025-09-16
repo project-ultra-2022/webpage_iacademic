@@ -45,7 +45,6 @@
 		"@sveltejs/adapter-static": "^3.0.4",
 		"@unpic/svelte": "^0.0.53",
 		"animejs": "^3.2.2",
-		"crypto": "^1.0.1",
 		"dotenv": "^16.4.5",
 		"embla-carousel-svelte": "^8.5.2",
 		"gsap": "^3.12.7",
