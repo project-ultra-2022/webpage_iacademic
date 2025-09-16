@@ -101,7 +101,7 @@
 					Ingresar a la plataforma
 				</a>
 				<a
-					href="https://www.iacademic.net/es/auth/sign-in"
+					href={getIacademicURL()}
 					target="_blank"
 					rel="noopener noreferrer"
 					class="block md:hidden"

@@ -72,7 +72,7 @@
 
 		data['g-recaptcha-response'] = captchaToken;
 		try {
-			const response = await fetch(process.env.NEXT_PUBLIC_ORCHESTRATOR_URL, {
+			const response = await fetch(VITE_API_URL, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
