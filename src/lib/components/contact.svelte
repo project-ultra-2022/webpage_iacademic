@@ -72,7 +72,7 @@
 
 		data['g-recaptcha-response'] = captchaToken;
 		try {
-			const response = await fetch('https://apineocentic.net:4000/v2/send-emails', {
+			const response = await fetch(process.env.NEXT_PUBLIC_ORCHESTRATOR_URL, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

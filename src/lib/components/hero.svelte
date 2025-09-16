@@ -13,6 +13,10 @@
 			window.scrollTo({ top: sectionPosition, behavior: 'smooth' });
 		}
 	}
+	const VITE_PUBLIC_IACADEMIC_URL = import.meta.env.VITE_PUBLIC_IACADEMIC_URL;
+	function getIacademicURL() {
+		return VITE_PUBLIC_IACADEMIC_URL + '/es/auth/sign-in';
+	}
 </script>
 
 <div
@@ -89,7 +93,7 @@
 			</Button>
 			<Button class="w-auto !bg-zinc-200 !text-gray-800 hover:!bg-zinc-300">
 				<a
-					href="https://www.iacademic.net/es/auth/sign-in"
+					href={getIacademicURL()}
 					target="_blank"
 					rel="noopener noreferrer"
 					class="hidden md:block"

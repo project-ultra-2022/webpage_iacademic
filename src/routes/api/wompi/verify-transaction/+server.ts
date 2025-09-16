@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { env } from '$env/dynamic/private';
 
 const WOMPI_PRIVATE_KEY = env.WOMPI_PRIVATE_KEY || env.VITE_WOMPI_PRIVATE_KEY;
-const WOMPI_BASE_URL = 'https://sandbox.wompi.co/v1';
+const WOMPI_BASE_URL = env.WOMPI_BASE_URL;
 
 export const GET: RequestHandler = async ({ url }) => {
 	try {

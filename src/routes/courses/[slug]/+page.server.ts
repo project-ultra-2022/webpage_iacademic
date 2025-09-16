@@ -8,7 +8,9 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 export const load: PageServerLoad = async ({ params }) => {
 	const { slug } = params;
 
-	const response = await fetch(`https://apineocentic.net:4000/v2/public-courses/${slug}`);
+	const response = await fetch(
+		process.env.NEXT_PUBLIC_ORCHESTRATOR_URL + `/v2/public-courses/${slug}`
+	);
 	if (!response.ok) {
 		throw new Error('Error al obtener los datos del API');
 	}
