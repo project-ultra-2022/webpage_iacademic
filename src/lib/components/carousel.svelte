@@ -41,7 +41,7 @@
 	};
 </script>
 
-<div class="relative mx-auto w-full max-w-4xl overflow-hidden">
+<div class="relative mx-auto w-full max-w-4xl overflow-hidden px-4">
 	<div
 		class="flex transition-transform duration-500 ease-in-out"
 		style="transform: translateX(-{(currentIndex * 100) / translateXValue}%)"
