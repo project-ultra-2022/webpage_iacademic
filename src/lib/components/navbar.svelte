@@ -9,6 +9,7 @@
 		DropdownItem,
 		Drawer,
 		Heading,
+		Button,
 		CloseButton
 	} from 'flowbite-svelte';
 	import { CartOutline, ChevronDownOutline } from 'flowbite-svelte-icons';
@@ -70,6 +71,10 @@
 			hidden = !isOpen;
 		});
 	});
+	const VITE_PUBLIC_IACADEMIC_URL = import.meta.env.VITE_PUBLIC_IACADEMIC_URL;
+	function getIacademicURL() {
+		return VITE_PUBLIC_IACADEMIC_URL + '/es/auth/sign-in';
+	}
 
 	function calculateTotal(items: BaseCourse[]): string {
 		const total = items.reduce((sum, item) => {
@@ -82,7 +87,7 @@
 
 <Navbar
 	let:toggle
-	class="glass-effect fixed left-1/2 top-0 z-50 w-full max-w-[100%] -translate-x-1/2 transform !rounded-none px-4 !text-white shadow-lg md:py-0"
+	class="glass-effect fixed top-0 z-50 w-full max-w-[100%] !rounded-none px-4 !text-white shadow-lg md:py-0"
 >
 	<NavBrand href="/">
 		<Image alt="Logo Iacademic" src="/logos/desktop.svg" width={220} height={55} role="figure" />
@@ -94,6 +99,7 @@
 			aria-label="Carrito de compras"
 		>
 			<CartOutline class="h-8 w-8 text-white" />
+
 			{#if cartCount > 0}
 				<span
 					class="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-xs text-white"
@@ -102,6 +108,13 @@
 				</span>
 			{/if}
 		</button>
+		<Button
+			class="w-auto rounded-md border border-[#5b49d1] bg-gradient-to-r from-[#5b49d1] to-[#7c6dd9] px-4 py-1.5 text-sm font-medium !text-white shadow-md transition-all duration-300 hover:scale-105 hover:border-[#4a3bc4] hover:from-[#4a3bc4] hover:to-[#6b5dcc] hover:shadow-lg active:scale-95"
+		>
+			<a href={getIacademicURL()} target="_blank" rel="noopener noreferrer" class="hidden md:block">
+				Iniciar sesión
+			</a>
+		</Button>
 		<NavHamburger onClick={() => onNavHamburgerClick(toggle)} class="hover:bg-transparent" />
 	</div>
 	<NavUl hidden={hideNavMenu}>
@@ -176,7 +189,6 @@
 		<NavLi href="/about" on:click={onNavLinkClick} class="relative">Sobre nosotros</NavLi>
 	</NavUl>
 </Navbar>
-
 <Drawer
 	placement="right"
 	transitionType="fly"
@@ -210,7 +222,6 @@
 				</div>
 			{/each}
 		</div>
-
 		<div class="border-t border-gray-800 p-4">
 			<p class="text-base font-normal">Total: {cartTotal} ({cartCount})</p>
 			<a
