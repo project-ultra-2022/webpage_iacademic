@@ -98,18 +98,10 @@
 				if (data['company']) {
 					whatsappMessage += ` Trabajo en ${data['company']}.`;
 				}
-				whatsappMessage += ` Me interesan los siguientes cursos: ${data['courses']}.`;
-
-				if (data['participants'] === '2 personas o más') {
-					whatsappMessage += ` Somos un grupo de 2 o más personas interesadas.`;
-				} else if (data['participants'] === '10 personas o más') {
-					whatsappMessage += ` Somos un grupo de 10 o más personas interesadas.`;
-				}
-
+				whatsappMessage += ` Estoy interesado en el siguiente curso: ${data['courses']}.`;
 				if (data['message']) {
 					whatsappMessage += ` Además, me gustaría agregar: ${data['message']}.`;
 				}
-
 				const whatsappURL = `https://api.whatsapp.com/send?phone=+573125443868&text=${encodeURIComponent(
 					whatsappMessage
 				)}`;
@@ -213,37 +205,19 @@
 								Curso de interés
 							</label>
 							<select
-								name="course"
-								id="course"
+								name="courses"
+								id="courses"
 								class="bg-dark block w-full rounded-md border-0 bg-gray-700 px-3.5 py-2 text-white shadow-sm ring-1 ring-inset ring-gray-100 focus:ring-2 focus:ring-inset focus:ring-white sm:text-sm sm:leading-6"
 								required
 							>
-								{#each courses as course}
-									<optgroup label={course.category}>
-										{#each course.items as item}
+								{#each courses as courses}
+									<optgroup label={courses.category}>
+										{#each courses.items as item}
 											<option value={item.name}>{item.name}</option>
 										{/each}
 									</optgroup>
 								{/each}
 							</select>
-						</div>
-						<div class="sm:col-span-2">
-							<label for="participants" class="block text-sm font-semibold leading-6 text-white">
-								¿De dónde escuchaste de nosotros?
-							</label>
-							<div class="mt-2.5">
-								<select
-									name="participants"
-									id="participants"
-									class="bg-dark block w-full rounded-md border-0 px-3.5 py-2 text-white shadow-sm ring-1 ring-inset ring-gray-100 focus:ring-2 focus:ring-inset focus:ring-white sm:text-sm sm:leading-6"
-									required
-								>
-									<option value="social">Redes sociales</option>
-									<option value="google">Búsqueda en google</option>
-									<option value="recomendación">Recomendación</option>
-									<option value="recomendación">Otro</option>
-								</select>
-							</div>
 						</div>
 						<div class="sm:col-span-2">
 							<label for="message" class="block text-sm font-semibold leading-6 text-white">
@@ -272,6 +246,7 @@
 							</label>
 						</div>
 					</div>
+
 					<div class="mt-4">
 						<div
 							class="g-recaptcha"

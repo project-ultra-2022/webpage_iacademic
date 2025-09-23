@@ -10,7 +10,6 @@ export const actions: Actions = {
 		const company = data.get('company');
 		const email = data.get('email');
 		const phone = data.get('phone');
-		const participants = data.get('participants');
 		const message = data.get('message');
 
 		const transporter = nodemailer.createTransport({
@@ -25,7 +24,7 @@ export const actions: Actions = {
 			from: 'centic.ultra@gmail.com',
 			to: 'info@centicsas.com.co',
 			subject: `Mensaje de contacto de ${name}`,
-			text: `Nombre: ${name}\nEmpresa: ${company}\nCorreo: ${email}\nTeléfono: ${phone} \nParticipantes: ${participants} \nMensaje: ${message}`
+			text: `Nombre: ${name}\nEmpresa: ${company}\nCorreo: ${email}\nTeléfono: ${phone} \nMensaje: ${message}`
 		};
 
 		try {
