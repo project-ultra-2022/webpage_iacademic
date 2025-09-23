@@ -38,7 +38,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-	class="glass-effect my-6 flex w-64 cursor-pointer flex-col rounded-xl shadow-sm"
+	class="glass-effect my-6 flex w-80 cursor-pointer flex-col rounded-xl shadow-sm"
 	on:click={() => {
 		if (typeof window !== 'undefined') {
 			window.location.href = `/courses/${keyWord}`;

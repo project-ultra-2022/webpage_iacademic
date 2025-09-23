@@ -30,7 +30,7 @@
 	class="relative isolate overflow-hidden bg-[#121b1d] lg:overflow-visible lg:px-0"
 	style="background-image: url('/background-hero.webp'); background-size: cover; background-position: center;"
 >
-	<div class="ms-[10%] !max-w-[90%] sm:!me-[0%] xl:pb-[1srem] xl:pt-10">
+	<div class="mx-[5%] !max-w-[90%] xl:pb-[1rem] xl:pt-10">
 		{#if filteredCourses.length > 0}
 			<div class="relative">
 				<button

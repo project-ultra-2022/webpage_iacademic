@@ -269,7 +269,7 @@
 					{/if}
 
 					{#if errorMessage}
-						<p class="mt-4 text-center text-[#5b49d1]">{errorMessage}</p>
+						<p class="mt-4 text-center text-[#ffffff]">{errorMessage}</p>
 					{/if}
 				</form>
 			</div>
