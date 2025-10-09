@@ -5,11 +5,13 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type { BaseCourse } from '$lib/types';
+	import { env } from '$env/dynamic/public';
 
 	let cartItems: BaseCourse[] = [];
 	let cartTotal = '';
 	let totalAmount = 0;
 
+	let collectedData = {};
 	// Datos del formulario
 	let formData = {
 		fullname: '',
@@ -17,7 +19,12 @@
 		numberDocument: '',
 		phone: '',
 		email: '',
-		dateBirth: ''
+		dateBirth: '',
+		habeasData: '',
+		keyBaseCourse: '',
+		date: '',
+		amount: '',
+		numberTransaction: ''
 	};
 
 	// Opciones para tipo de documento
@@ -47,7 +54,9 @@
 		}, 0);
 		totalAmount = total;
 		cartTotal = formatCurrency(total);
-
+		formData.keyBaseCourse = cartItems[0].key;
+		formData.amount = total.toString();
+		console.log('<<cartItems:', cartItems);
 		return unsubscribe;
 	});
 
@@ -62,7 +71,8 @@
 			!formData.numberDocument ||
 			!formData.phone ||
 			!formData.email ||
-			!formData.dateBirth
+			!formData.dateBirth ||
+			!formData.habeasData
 		) {
 			errorMessage = 'Por favor completa todos los campos';
 			isSubmitting = false;
@@ -154,7 +164,7 @@
 			console.log('Widget config final:', widgetConfig);
 
 			const checkout = new (window as any).WidgetCheckout(widgetConfig);
-
+			//RESULTADO DEL PAGO------------------------------------------------------------
 			checkout.open((result: any) => {
 				console.log('Resultado del pago:', result);
 				handlePaymentResult(result);
@@ -166,12 +176,30 @@
 		}
 	}
 
-	function handlePaymentResult(result: any) {
+	async function handlePaymentResult(result: any) {
 		if (result.transaction?.status === 'APPROVED') {
-			// Pago exitoso
-			alert('¡Pago realizado exitosamente! Se ha enviado la confirmación a tu correo.');
-			cart.clear();
-			goto('/courses');
+			formData.date = result.transaction.finalizedAt;
+			formData.numberTransaction = result.transaction.reference;
+			// ✅ AQUÍ es donde debe ir - solo cuando el pago sea exitoso
+			console.log('💳 Pago APROBADO - Creando estudiante...');
+			// Pasar todos los datos necesarios explícitamente
+			console.log('CREO QUE AQUI ESTAN LOS DATOS', result);
+			console.log('DATOS de FORMDATA', formData);
+			
+			try {
+				// 🚀 CRÍTICO: Crear estudiante ANTES de mostrar éxito y redireccionar
+				await handleCreateStudent(formData);
+				console.log('✅ Proceso completo: Pago exitoso Y estudiante creado');
+				
+				// Solo después de crear el estudiante, mostrar éxito y redireccionar
+				alert('¡Pago realizado exitosamente! Se ha enviado la confirmación a tu correo.');
+				cart.clear();
+				goto('/courses');
+			} catch (error) {
+				console.error('❌ Error crítico: Pago exitoso pero falló creación de estudiante:', error);
+				// Mostrar mensaje específico para este caso crítico
+				alert('Pago procesado exitosamente, pero hubo un problema creando tu acceso. Contacta soporte con esta referencia: ' + result.transaction.reference);
+			}
 		} else if (result.transaction?.status === 'DECLINED') {
 			// Pago rechazado
 			alert('El pago fue rechazado. Por favor, verifica tus datos e intenta nuevamente.');
@@ -183,6 +211,46 @@
 		}
 	}
 
+	async function handleCreateStudent(studentData: typeof formData) {
+		console.log(
+			'🚀 Llamando action del servidor para crear estudiante con todos los datos:',
+			studentData
+		);
+
+		try {
+			// Llamar a la action del servidor con TODOS los datos del formulario
+			const formDataToSend = new FormData();
+			formDataToSend.append('email', studentData.email);
+			formDataToSend.append('fullname', studentData.fullname);
+			formDataToSend.append('typeDocument', studentData.typeDocument);
+			formDataToSend.append('numberDocument', studentData.numberDocument);
+			formDataToSend.append('phone', studentData.phone);
+			formDataToSend.append('dateBirth', studentData.dateBirth);
+			formDataToSend.append('habeasData', studentData.habeasData);
+			formDataToSend.append('keyBaseCourse', studentData.keyBaseCourse);
+			formDataToSend.append('date', studentData.date);
+			formDataToSend.append('amount', studentData.amount);
+			formDataToSend.append('numberTransaction', studentData.numberTransaction);
+
+			const response = await fetch('?/createStudent', {
+				method: 'POST',
+				body: formDataToSend
+			});
+
+			const resultServer = await response.json();
+
+			if (resultServer.type === 'success') {
+				console.log('✅ Estudiante creado exitosamente desde servidor:', resultServer.data);
+				return resultServer.data;
+			} else {
+				console.error('❌ Error desde servidor:', resultServer.error);
+				throw new Error(resultServer.error || 'Error creando estudiante');
+			}
+		} catch (error) {
+			console.error('❌ Error llamando action del servidor:', error);
+			throw error;
+		}
+	}
 	function loadWompiScript(): Promise<void> {
 		return new Promise((resolve, reject) => {
 			// Verificar si el script ya está cargado
@@ -311,6 +379,20 @@
 							class="block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
 						/>
 					</div>
+					<div>
+						<Label for="habeasData" class="mb-2 flex items-center text-white">
+							<input
+								id="habeasData"
+								type="checkbox"
+								on:change={(e) => {
+									formData.habeasData = e.currentTarget.checked ? 'acepto' : '';
+								}}
+								required
+								class="mr-2 h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
+							/>
+							Acepto el tratamiento de mis datos personales
+						</Label>
+					</div>
 
 					<Button
 						type="submit"
@@ -348,7 +430,7 @@
 					<div class="space-y-4">
 						{#each cartItems as item}
 							<div class="rounded-lg bg-gray-600 p-4">
-								<h3 class="mb-2 text-lg font-semibold text-white">{item.name}</h3>
+								<h3 class="mb-2 text-lg font-semibold text-white">{item.name}HOLAA</h3>
 								<p class="text-gray-300">{item.shortDescriptionEcommerce || 'Curso profesional'}</p>
 								<div class="mt-2 flex items-center justify-between">
 									<span class="text-sm text-gray-400">Duración: {item.duration || 'N/A'} horas</span
