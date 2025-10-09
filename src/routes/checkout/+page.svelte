@@ -185,12 +185,12 @@
 			// Pasar todos los datos necesarios explícitamente
 			console.log('CREO QUE AQUI ESTAN LOS DATOS', result);
 			console.log('DATOS de FORMDATA', formData);
-			
+
 			try {
 				// 🚀 CRÍTICO: Crear estudiante ANTES de mostrar éxito y redireccionar
 				await handleCreateStudent(formData);
 				console.log('✅ Proceso completo: Pago exitoso Y estudiante creado');
-				
+
 				// Solo después de crear el estudiante, mostrar éxito y redireccionar
 				alert('¡Pago realizado exitosamente! Se ha enviado la confirmación a tu correo.');
 				cart.clear();
@@ -198,7 +198,10 @@
 			} catch (error) {
 				console.error('❌ Error crítico: Pago exitoso pero falló creación de estudiante:', error);
 				// Mostrar mensaje específico para este caso crítico
-				alert('Pago procesado exitosamente, pero hubo un problema creando tu acceso. Contacta soporte con esta referencia: ' + result.transaction.reference);
+				alert(
+					'Pago procesado exitosamente, pero hubo un problema creando tu acceso. Contacta soporte con esta referencia: ' +
+						result.transaction.reference
+				);
 			}
 		} else if (result.transaction?.status === 'DECLINED') {
 			// Pago rechazado
