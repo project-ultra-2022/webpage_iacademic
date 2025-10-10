@@ -42,7 +42,7 @@
 
 <main class="bg-[#202121] pt-20">
 	<section class="mx-auto max-w-[80%]">
-		<div class="mb-4 flex flex-wrap gap-2 rounded-lg shadow-sm">
+		<div class="mb-4 flex flex-wrap gap-12 justify-center rounded-lg shadow-sm">
 			{#each categories as { categoryName, categoryKey }}
 				<CategoryButton {categoryName} {categoryKey} on:categorySelect={handleCategoryClick} />
 			{/each}

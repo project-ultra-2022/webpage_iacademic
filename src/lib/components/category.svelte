@@ -12,9 +12,25 @@
 	];
 
 	let emblaApi;
+	let autoplayInterval;
 
 	function onInit(event) {
 		emblaApi = event.detail;
+		setTimeout(() => startAutoplay(), 1000);
+	}
+
+	function startAutoplay() {
+		if (autoplayInterval) clearInterval(autoplayInterval);
+		autoplayInterval = setInterval(() => {
+			scrollNext();
+		}, 3000);
+	}
+
+	function stopAutoplay() {
+		if (autoplayInterval) {
+			clearInterval(autoplayInterval);
+			autoplayInterval = null;
+		}
 	}
 
 	function scrollPrev() {
@@ -32,15 +48,15 @@
 >
 	<div class="mx-[5%] !max-w-[90%] xl:pb-[1rem] xl:pt-10">
 		{#if filteredCourses.length > 0}
-			<div class="relative">
+			<div class="flex items-center justify-between" role="region" on:mouseenter={stopAutoplay} on:mouseleave={startAutoplay}>
 				<button
-					class="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-3 text-black shadow-lg hover:bg-gray-200"
+					class="rounded-full bg-white p-3 text-black shadow-lg hover:bg-gray-200 mr-4"
 					on:click={scrollPrev}
 					aria-label="Previous"
 				>
 					<CaretLeftSolid class="h-6 w-6" />
 				</button>
-				<div class="embla" use:emblaCarouselSvelte on:emblaInit={onInit}>
+				<div class="embla flex-1 px-4" use:emblaCarouselSvelte={{ options: { loop: true }, plugins: [] }} on:emblaInit={onInit}>
 					<div class="embla__container">
 						{#each filteredCourses as course}
 							<div class="embla__slide">
@@ -55,7 +71,7 @@
 					</div>
 				</div>
 				<button
-					class="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white p-3 text-black shadow-lg hover:bg-gray-200"
+					class="rounded-full bg-white p-3 text-black shadow-lg hover:bg-gray-200 ml-4"
 					on:click={scrollNext}
 					aria-label="Next"
 				>
@@ -69,46 +85,52 @@
 </main>
 
 <style>
-	.glow-background {
-		filter: blur(50px);
-	}
-
 	.embla {
 		overflow: hidden;
 	}
 
 	.embla__container {
 		display: flex;
-		gap: 0.5rem;
+		gap: 1rem;
 	}
 
 	.embla__slide {
-		flex: 0 0 calc(20% - 0.5rem);
+		flex: 0 0 20%;
 		min-width: 0;
 		scroll-snap-align: start;
 	}
 
+	.embla__slide:last-child {
+		margin-right: 0;
+	}
+
 	@media (max-width: 1280px) {
 		.embla__slide {
-			flex: 0 0 calc(25% - 0.5rem);
+			flex: 0 0 25%;
 		}
 	}
 
 	@media (max-width: 1024px) {
 		.embla__slide {
-			flex: 0 0 calc(33.33% - 0.5rem);
+			flex: 0 0 33.33%;
 		}
 	}
 
 	@media (max-width: 768px) {
 		.embla__slide {
-			flex: 0 0 calc(50% - 0.5rem);
+			flex: 0 0 50%;
 		}
 	}
 
 	@media (max-width: 640px) {
 		.embla__slide {
-			flex: 0 0 calc(100% - 0.5rem);
+			flex: 0 0 100%;
+		}
+		.embla__container {
+			gap: 0;
+		}
+		.embla {
+			padding: 0;
 		}
 	}
 

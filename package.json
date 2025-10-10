@@ -47,6 +47,7 @@
 		"animejs": "^3.2.2",
 		"cryptr": "^6.4.0",
 		"dotenv": "^16.4.5",
+		"embla-carousel-autoplay": "^8.6.0",
 		"embla-carousel-svelte": "^8.5.2",
 		"gsap": "^3.12.7",
 		"nodemailer": "^6.9.14",
