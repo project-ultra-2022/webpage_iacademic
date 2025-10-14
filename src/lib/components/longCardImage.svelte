@@ -38,7 +38,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-	class="glass-effect my-6 flex w-full cursor-pointer flex-col rounded-xl shadow-sm h-[600px] overflow-hidden"
+	class="glass-effect my-6 flex w-80 cursor-pointer flex-col rounded-xl shadow-sm"
 	on:click={() => {
 		if (typeof window !== 'undefined') {
 			window.location.href = `/courses/${keyWord}`;
@@ -46,17 +46,17 @@
 	}}
 >
 	{#if !imageBottom}
-		<div class="m-4 flex h-60 items-center justify-center overflow-hidden rounded-lg">
+		<div class="m-4 flex h-64 items-center justify-center overflow-hidden rounded-lg">
 			<Image
 				class="m-4 h-full w-full object-cover p-0"
 				src={imageUrl}
 				layout="fullWidth"
 				style="border-radius: 0.5rem;"
-			/>	
+			/>
 		</div>
 	{/if}
-	<div class="p-4 text-center flex-1">
-		<div class="flex items-center justify-center mb-4">
+	<div class="p-4 text-center">
+		<div class="flex h-12 items-center justify-center">
 			<h4 class="text-lg font-semibold leading-tight text-slate-200">
 				{name}
 			</h4>
@@ -74,7 +74,7 @@
 		</div>
 	</div>
 	{#if imageBottom}
-		<div class="m-4 flex h-60 items-center justify-center overflow-hidden rounded-lg">
+		<div class="m-4 flex h-64 items-center justify-center overflow-hidden rounded-lg">
 			<Image
 				class="m-4 h-full w-full object-cover p-0"
 				src={imageUrl}

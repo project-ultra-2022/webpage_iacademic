@@ -1,6 +1,7 @@
 <script lang="ts">
 	export let categoryName: string;
 	export let categoryKey: string;
+	export let isActive: boolean = false;
 
 	import { createEventDispatcher } from 'svelte';
 
@@ -14,7 +15,17 @@
 <button
 	on:click={handleClick}
 	type="button"
-	class="-ms-px -mt-px inline-flex items-center gap-x-2 rounded-md border border-[#5b49d1] bg-[#4b3ab7] px-4 py-3 text-sm font-medium text-[#f4f6fa] shadow-sm hover:bg-[#4a3bb3] focus:z-10 focus:bg-[#4a3bb3] focus:outline-none disabled:pointer-events-none disabled:opacity-50 sm:mt-0 sm:first:ms-0 dark:border-[#5b49d1] dark:bg-[#5b49d1] dark:text-[#f4f6fa] dark:hover:bg-[#4a3bb3] dark:focus:bg-[#4a3bb3]"
+	class="group relative overflow-hidden rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#5b49d1] focus:ring-offset-2 focus:ring-offset-slate-900 {isActive
+		? 'bg-gradient-to-r from-[#5b49d1] to-[#4b3ab7] text-white shadow-lg shadow-[#5b49d1]/30'
+		: 'border border-slate-600/50 bg-slate-800/70 text-gray-200 backdrop-blur-sm hover:border-slate-500 hover:bg-slate-700/80 hover:text-white'}"
 >
-	{categoryName}
+	<!-- Efecto de brillo en hover -->
+	<div
+		class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 ease-in-out group-hover:translate-x-full"
+	></div>
+
+	<!-- Contenido del botón -->
+	<span class="relative z-10 whitespace-nowrap">
+		{categoryName}
+	</span>
 </button>

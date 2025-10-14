@@ -40,12 +40,30 @@
 	handleCategoryClick({ detail: { categoryName, categoryKey } });
 </script>
 
-<main class="bg-[#202121] pt-20">
-	<section class="mx-auto max-w-[80%]">
-		<div class="mb-4 flex flex-wrap gap-12 justify-center rounded-lg shadow-sm">
-			{#each categories as { categoryName, categoryKey }}
-				<CategoryButton {categoryName} {categoryKey} on:categorySelect={handleCategoryClick} />
-			{/each}
+<main class="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 pt-20">
+	<section class="mx-auto max-w-7xl px-4">
+		<!-- Header de categorías mejorado -->
+		<div class="mb-6 pt-8 text-center">
+			<h2
+				class="mb-2 bg-gradient-to-r from-white to-gray-200 bg-clip-text text-3xl font-bold text-transparent"
+			>
+				Explora Nuestros Cursos
+			</h2>
+			<p class="text-gray-300">Selecciona una categoría para encontrar el curso perfecto para ti</p>
+		</div>
+
+		<!-- Contenedor de categorías rediseñado -->
+		<div class="-mx-4 mb-8 overflow-x-auto px-4">
+			<div class="flex min-w-max justify-center gap-4 py-4 sm:flex-wrap sm:justify-center">
+				{#each categories as { categoryName: catName, categoryKey: catKey }}
+					<CategoryButton
+						categoryName={catName}
+						categoryKey={catKey}
+						isActive={categoryKey === catKey}
+						on:categorySelect={handleCategoryClick}
+					/>
+				{/each}
+			</div>
 		</div>
 	</section>
 	<Category {filteredCourses} />
