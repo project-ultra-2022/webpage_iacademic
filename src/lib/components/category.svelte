@@ -1,7 +1,5 @@
 <script lang="ts">
-	import LongCardImage from './longCardImage.svelte';
-	import emblaCarouselSvelte from 'embla-carousel-svelte';
-	import { CaretLeftSolid, CaretRightSolid } from 'flowbite-svelte-icons';
+	import CourseCarousel from './courseCarousel.svelte';
 
 	export let filteredCourses = [];
 	const spots = [
@@ -10,140 +8,15 @@
 		{ cx: '80%', cy: '70%', r: '20%', opacity: 0.4 },
 		{ cx: '30%', cy: '90%', r: '12%', opacity: 0.5 }
 	];
-
-	let emblaApi;
-	let autoplayInterval;
-
-	function onInit(event) {
-		emblaApi = event.detail;
-		setTimeout(() => startAutoplay(), 1000);
-	}
-
-	function startAutoplay() {
-		if (autoplayInterval) clearInterval(autoplayInterval);
-		autoplayInterval = setInterval(() => {
-			scrollNext();
-		}, 3000);
-	}
-
-	function stopAutoplay() {
-		if (autoplayInterval) {
-			clearInterval(autoplayInterval);
-			autoplayInterval = null;
-		}
-	}
-
-	function scrollPrev() {
-		if (emblaApi) emblaApi.scrollPrev();
-	}
-
-	function scrollNext() {
-		if (emblaApi) emblaApi.scrollNext();
-	}
 </script>
 
-<main
-	class="relative isolate overflow-hidden bg-[#121b1d] lg:overflow-visible lg:px-0"
-	style="background-image: url('/background-hero.webp'); background-size: cover; background-position: center;"
->
-	<div class="mx-[5%] !max-w-[90%] xl:pb-[1rem] xl:pt-10">
-		{#if filteredCourses.length > 0}
-			<div class="flex items-center justify-between" role="region" on:mouseenter={stopAutoplay} on:mouseleave={startAutoplay}>
-				<button
-					class="rounded-full bg-white p-3 text-black shadow-lg hover:bg-gray-200 mr-4"
-					on:click={scrollPrev}
-					aria-label="Previous"
-				>
-					<CaretLeftSolid class="h-6 w-6" />
-				</button>
-				<div class="embla flex-1 px-4" use:emblaCarouselSvelte={{ options: { loop: true }, plugins: [] }} on:emblaInit={onInit}>
-					<div class="embla__container">
-						{#each filteredCourses as course}
-							<div class="embla__slide">
-								<LongCardImage
-									name={course.name}
-									keyWord={course.keyWord}
-									shortDescriptionEcommerce={course.shortDescriptionEcommerce}
-									tags={[`${course.duration} horas`, course.certifiedEntityEcommerce]}
-								/>
-							</div>
-						{/each}
-					</div>
-				</div>
-				<button
-					class="rounded-full bg-white p-3 text-black shadow-lg hover:bg-gray-200 ml-4"
-					on:click={scrollNext}
-					aria-label="Next"
-				>
-					<CaretRightSolid class="h-6 w-6" />
-				</button>
-			</div>
-		{:else}
-			<p class="mt-8 text-center text-[#2a2c2d]">No hay cursos disponibles para esta categoría.</p>
-		{/if}
+<main class="relative isolate overflow-hidden bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 lg:overflow-visible lg:px-0">
+	<!-- full-width container so the section background covers entire area -->
+	<div class="w-full pb-12 pt-0">
+		<div class="w-full">
+			<CourseCarousel {filteredCourses} />
+		</div>
 	</div>
 </main>
 
-<style>
-	.embla {
-		overflow: hidden;
-	}
 
-	.embla__container {
-		display: flex;
-		gap: 1rem;
-	}
-
-	.embla__slide {
-		flex: 0 0 20%;
-		min-width: 0;
-		scroll-snap-align: start;
-	}
-
-	.embla__slide:last-child {
-		margin-right: 0;
-	}
-
-	@media (max-width: 1280px) {
-		.embla__slide {
-			flex: 0 0 25%;
-		}
-	}
-
-	@media (max-width: 1024px) {
-		.embla__slide {
-			flex: 0 0 33.33%;
-		}
-	}
-
-	@media (max-width: 768px) {
-		.embla__slide {
-			flex: 0 0 50%;
-		}
-	}
-
-	@media (max-width: 640px) {
-		.embla__slide {
-			flex: 0 0 100%;
-		}
-		.embla__container {
-			gap: 0;
-		}
-		.embla {
-			padding: 0;
-		}
-	}
-
-	button {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: black;
-		font-size: 1.25rem;
-		cursor: pointer;
-	}
-
-	button:hover {
-		background: #f0f0f0;
-	}
-</style>
