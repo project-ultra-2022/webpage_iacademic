@@ -1,6 +1,7 @@
 import type { Actions } from './$types';
 import { env } from '$env/dynamic/private';
 import { generateRandomPassword } from '$lib/helper/PasswordHelper';
+import { createToken } from '$lib/helper/TokenAuth';
 
 export const actions: Actions = {
 	createStudent: async ({ request }) => {
@@ -69,7 +70,7 @@ export const actions: Actions = {
 				//keyRol: 'RO-LE-0007',
 				email: email,
 				password: generatedPassword,
-				fullname: fullname, // ✅ Tu API espera este campo
+				fullname: fullname,
 				typeDocument: typeDocument,
 				numberDocument: numberDocument,
 				phone: phone,
@@ -90,7 +91,8 @@ export const actions: Actions = {
 			const response = await fetch(endpoint, {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					authentication: createToken()
 				},
 				body: JSON.stringify(userBody)
 			});

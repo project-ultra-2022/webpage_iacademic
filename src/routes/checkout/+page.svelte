@@ -204,7 +204,8 @@
 				modalType = 'success';
 				modalTitle = '¡Compra Exitosa!';
 				modalMessage = 'Tu pago ha sido procesado correctamente y tu cuenta ha sido creada.';
-				nextSteps = 'Revisa tu correo electrónico para recibir las credenciales de acceso (usuario y contraseña). Una vez que las tengas, podrás ingresar a la plataforma educativa y acceder a tus cursos desde la sección "Mis Cursos". Si no encuentras el email, revisa tu carpeta de spam.';
+				nextSteps =
+					'Revisa tu correo electrónico para recibir las credenciales de acceso (usuario y contraseña). Una vez que las tengas, podrás ingresar a la plataforma educativa y acceder a tus cursos desde la sección "Mis Cursos". Si no encuentras el email, revisa tu carpeta de spam.';
 				showModal = true;
 			} catch (error) {
 				console.error('❌ Error crítico: Pago exitoso pero falló creación de estudiante:', error);
@@ -218,7 +219,8 @@
 			// Pago rechazado
 			modalType = 'error';
 			modalTitle = 'Pago Rechazado';
-			modalMessage = 'El pago fue rechazado por tu entidad financiera. Por favor, verifica tus datos de tarjeta e intenta nuevamente.';
+			modalMessage =
+				'El pago fue rechazado por tu entidad financiera. Por favor, verifica tus datos de tarjeta e intenta nuevamente.';
 			showModal = true;
 			isSubmitting = false;
 		} else {
@@ -226,7 +228,8 @@
 			console.log('Pago cancelado o pendiente:', result);
 			modalType = 'error';
 			modalTitle = 'Pago Pendiente o Cancelado';
-			modalMessage = 'Tu pago está siendo procesado o fue cancelado. Si crees que hay un error, contacta soporte.';
+			modalMessage =
+				'Tu pago está siendo procesado o fue cancelado. Si crees que hay un error, contacta soporte.';
 			showModal = true;
 			isSubmitting = false;
 		}
@@ -310,7 +313,6 @@
 			document.head.appendChild(script);
 		});
 	}
-
 </script>
 
 <svelte:head>
@@ -452,7 +454,7 @@
 					<div class="space-y-4">
 						{#each cartItems as item}
 							<div class="rounded-lg bg-gray-600 p-4">
-								<h3 class="mb-2 text-lg font-semibold text-white">{item.name}HOLAA</h3>
+								<h3 class="mb-2 text-lg font-semibold text-white">{item.name}</h3>
 								<p class="text-gray-300">{item.shortDescriptionEcommerce || 'Curso profesional'}</p>
 								<div class="mt-2 flex items-center justify-between">
 									<span class="text-sm text-gray-400">Duración: {item.duration || 'N/A'} horas</span
