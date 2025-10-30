@@ -12,7 +12,7 @@
 
 <main class="relative isolate overflow-hidden bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 lg:overflow-visible lg:px-0">
 	<!-- full-width container so the section background covers entire area -->
-	<div class="w-full pb-12 pt-0">
+	<div class="w-full pt-0">
 		<div class="w-full">
 			<CourseCarousel {filteredCourses} />
 		</div>

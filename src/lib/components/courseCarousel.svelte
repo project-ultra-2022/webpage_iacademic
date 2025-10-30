@@ -153,7 +153,7 @@
 		background: linear-gradient(135deg, #0f1724 0%, #111827 40%, #0f1724 100%); /* fallback */
 		/* the precise Tailwind gradient: from-slate-900 via-gray-900 to-slate-800 */
 		background: linear-gradient(135deg, #0f1724 0%, #111827 40%, #1f2937 100%);
-		padding: 80px 0;
+		padding: 40px 0;
 	}
 
 	.nav-button {
@@ -215,7 +215,7 @@
 		color: #e5e7eb;
 		box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
 		transition: box-shadow 0.3s;
-		height: 360px; /* enforce consistent card height */
+		height: 450px; /* enforce consistent card height */
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
@@ -227,7 +227,7 @@
 
 	.card-image {
 		width: 100%;
-		height: 120px;
+		height: 180px;
 		object-fit: cover;
 		border-radius: 12px;
 		margin-bottom: 16px;
