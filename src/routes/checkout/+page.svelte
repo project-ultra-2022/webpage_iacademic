@@ -1,15 +1,19 @@
 <script lang="ts">
 	import { cart } from '$lib/stores/cart';
 	import { formatCurrency } from '$lib/utils/format';
-	import { Heading, Input, Label, Select, Button } from 'flowbite-svelte';
+	import { Heading, Input, Label, Select, Button, Modal } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type { BaseCourse } from '$lib/types';
+	import { env } from '$env/dynamic/public';
+	import CheckoutModal from '$lib/components/CheckoutModal.svelte';
+	import { fly } from 'svelte/transition';
 
 	let cartItems: BaseCourse[] = [];
 	let cartTotal = '';
 	let totalAmount = 0;
 
+	let collectedData = {};
 	// Datos del formulario
 	let formData = {
 		fullname: '',
@@ -17,7 +21,12 @@
 		numberDocument: '',
 		phone: '',
 		email: '',
-		dateBirth: ''
+		dateBirth: '',
+		habeasData: '',
+		keyBaseCourse: '',
+		date: '',
+		amount: '',
+		numberTransaction: ''
 	};
 
 	// Opciones para tipo de documento
@@ -30,6 +39,13 @@
 
 	let isSubmitting = false;
 	let errorMessage = '';
+
+	// Variables para el modal de resultado
+	let showModal = false;
+	let modalType = '';
+	let modalTitle = '';
+	let modalMessage = '';
+	let nextSteps = '';
 
 	onMount(() => {
 		const unsubscribe = cart.subscribe((items) => {
@@ -47,7 +63,9 @@
 		}, 0);
 		totalAmount = total;
 		cartTotal = formatCurrency(total);
-
+		formData.keyBaseCourse = cartItems[0].key;
+		formData.amount = total.toString();
+		console.log('<<cartItems:', cartItems);
 		return unsubscribe;
 	});
 
@@ -62,7 +80,8 @@
 			!formData.numberDocument ||
 			!formData.phone ||
 			!formData.email ||
-			!formData.dateBirth
+			!formData.dateBirth ||
+			!formData.habeasData
 		) {
 			errorMessage = 'Por favor completa todos los campos';
 			isSubmitting = false;
@@ -154,7 +173,7 @@
 			console.log('Widget config final:', widgetConfig);
 
 			const checkout = new (window as any).WidgetCheckout(widgetConfig);
-
+			//RESULTADO DEL PAGO------------------------------------------------------------
 			checkout.open((result: any) => {
 				console.log('Resultado del pago:', result);
 				handlePaymentResult(result);
@@ -166,23 +185,96 @@
 		}
 	}
 
-	function handlePaymentResult(result: any) {
+	async function handlePaymentResult(result: any) {
 		if (result.transaction?.status === 'APPROVED') {
-			// Pago exitoso
-			alert('¡Pago realizado exitosamente! Se ha enviado la confirmación a tu correo.');
-			cart.clear();
-			goto('/courses');
+			formData.date = result.transaction.finalizedAt;
+			formData.numberTransaction = result.transaction.reference;
+			// ✅ AQUÍ es donde debe ir - solo cuando el pago sea exitoso
+			console.log('💳 Pago APROBADO - Creando estudiante...');
+			// Pasar todos los datos necesarios explícitamente
+			console.log('CREO QUE AQUI ESTAN LOS DATOS', result);
+			console.log('DATOS de FORMDATA', formData);
+
+			try {
+				// 🚀 CRÍTICO: Crear estudiante ANTES de mostrar éxito y redireccionar
+				await handleCreateStudent(formData);
+				console.log('✅ Proceso completo: Pago exitoso Y estudiante creado');
+
+				// Mostrar modal de éxito
+				modalType = 'success';
+				modalTitle = '¡Compra Exitosa!';
+				modalMessage = 'Tu pago ha sido procesado correctamente y tu cuenta ha sido creada.';
+				nextSteps =
+					'Revisa tu correo electrónico para recibir las credenciales de acceso (usuario y contraseña). Una vez que las tengas, podrás ingresar a la plataforma educativa y acceder a tus cursos desde la sección "Mis Cursos". Si no encuentras el email, revisa tu carpeta de spam.';
+				showModal = true;
+			} catch (error) {
+				console.error('❌ Error crítico: Pago exitoso pero falló creación de estudiante:', error);
+				// Mostrar modal de error
+				modalType = 'error';
+				modalTitle = 'Error en la Compra';
+				modalMessage = `Pago procesado exitosamente, pero hubo un problema creando tu acceso. Contacta soporte con esta referencia: ${result.transaction.reference}`;
+				showModal = true;
+			}
 		} else if (result.transaction?.status === 'DECLINED') {
 			// Pago rechazado
-			alert('El pago fue rechazado. Por favor, verifica tus datos e intenta nuevamente.');
+			modalType = 'error';
+			modalTitle = 'Pago Rechazado';
+			modalMessage =
+				'El pago fue rechazado por tu entidad financiera. Por favor, verifica tus datos de tarjeta e intenta nuevamente.';
+			showModal = true;
 			isSubmitting = false;
 		} else {
 			// Pago cancelado o pendiente
 			console.log('Pago cancelado o pendiente:', result);
+			modalType = 'error';
+			modalTitle = 'Pago Pendiente o Cancelado';
+			modalMessage =
+				'Tu pago está siendo procesado o fue cancelado. Si crees que hay un error, contacta soporte.';
+			showModal = true;
 			isSubmitting = false;
 		}
 	}
 
+	async function handleCreateStudent(studentData: typeof formData) {
+		console.log(
+			'🚀 Llamando action del servidor para crear estudiante con todos los datos:',
+			studentData
+		);
+
+		try {
+			// Llamar a la action del servidor con TODOS los datos del formulario
+			const formDataToSend = new FormData();
+			formDataToSend.append('email', studentData.email);
+			formDataToSend.append('fullname', studentData.fullname);
+			formDataToSend.append('typeDocument', studentData.typeDocument);
+			formDataToSend.append('numberDocument', studentData.numberDocument);
+			formDataToSend.append('phone', studentData.phone);
+			formDataToSend.append('dateBirth', studentData.dateBirth);
+			formDataToSend.append('habeasData', studentData.habeasData);
+			formDataToSend.append('keyBaseCourse', studentData.keyBaseCourse);
+			formDataToSend.append('date', studentData.date);
+			formDataToSend.append('amount', studentData.amount);
+			formDataToSend.append('numberTransaction', studentData.numberTransaction);
+
+			const response = await fetch('?/createStudent', {
+				method: 'POST',
+				body: formDataToSend
+			});
+
+			const resultServer = await response.json();
+
+			if (resultServer.type === 'success') {
+				console.log('✅ Estudiante creado exitosamente desde servidor:', resultServer.data);
+				return resultServer.data;
+			} else {
+				console.error('❌ Error desde servidor:', resultServer.error);
+				throw new Error(resultServer.error || 'Error creando estudiante');
+			}
+		} catch (error) {
+			console.error('❌ Error llamando action del servidor:', error);
+			throw error;
+		}
+	}
 	function loadWompiScript(): Promise<void> {
 		return new Promise((resolve, reject) => {
 			// Verificar si el script ya está cargado
@@ -311,6 +403,20 @@
 							class="block w-full rounded-lg border border-gray-600 bg-gray-700 p-2.5 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
 						/>
 					</div>
+					<div>
+						<Label for="habeasData" class="mb-2 flex items-center text-white">
+							<input
+								id="habeasData"
+								type="checkbox"
+								on:change={(e) => {
+									formData.habeasData = e.currentTarget.checked ? 'acepto' : '';
+								}}
+								required
+								class="mr-2 h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500"
+							/>
+							Acepto el tratamiento de mis datos personales
+						</Label>
+					</div>
 
 					<Button
 						type="submit"
@@ -379,4 +485,6 @@
 			</div>
 		</div>
 	</div>
+
+	<CheckoutModal bind:showModal {modalType} {modalTitle} {modalMessage} {nextSteps} />
 </main>
