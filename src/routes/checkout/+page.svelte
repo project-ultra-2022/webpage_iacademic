@@ -147,6 +147,8 @@
 			if (transactionData.acceptanceToken) {
 				widgetConfig.acceptanceToken = transactionData.acceptanceToken;
 				console.log('Acceptance token agregado');
+			} else {
+				console.warn('⚠️ ADVERTENCIA: No hay acceptance token - esto puede causar error 403');
 			}
 
 			// Agregar firma de integridad (CRÍTICO - formato específico de Wompi)
@@ -172,15 +174,44 @@
 
 			console.log('Widget config final:', widgetConfig);
 
+			// 📝 LOG: Intentar inicializar el widget
+			console.log('🚀 Creando instancia de WidgetCheckout...');
 			const checkout = new (window as any).WidgetCheckout(widgetConfig);
+			
+			console.log('✅ Widget creado exitosamente, abriendo modal de pago...');
+			
 			//RESULTADO DEL PAGO------------------------------------------------------------
 			checkout.open((result: any) => {
 				console.log('Resultado del pago:', result);
 				handlePaymentResult(result);
 			});
+
+			// 📝 LOG: Escuchar eventos de error del widget
+			console.log('👂 Escuchando eventos de error del widget...');
+			
 		} catch (error) {
-			console.error('Error al inicializar widget:', error);
-			errorMessage = 'Error al cargar el sistema de pago. Inténtalo de nuevo.';
+			console.error('❌ Error al inicializar widget:', error);
+			
+			// 📝 LOG: Capturar detalles específicos del error
+			if (error instanceof Error) {
+				console.error('📋 Detalles del error:');
+				console.error('  Mensaje:', error.message);
+				console.error('  Stack:', error.stack);
+			}
+			
+			// 📝 LOG: Verificar si es un error de CloudFront/403
+			if (error.message && error.message.includes('403')) {
+				console.error('🚫 ERROR 403 detectado al cargar el widget de Wompi!');
+				console.error('💡 Posibles causas:');
+				console.error('  1. Falta el acceptance token de Wompi');
+				console.error('  2. El dominio localhost no está permitido en Wompi');
+				console.error('  3. CloudFront está bloqueando la petición');
+				console.error('  4. La llave pública de Wompi es inválida');
+				errorMessage = 'Error al cargar el sistema de pago. El servicio de pagos bloqueó la solicitud (Error 403). Por favor, contacta soporte.';
+			} else {
+				errorMessage = 'Error al cargar el sistema de pago. Inténtalo de nuevo.';
+			}
+			
 			isSubmitting = false;
 		}
 	}

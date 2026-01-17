@@ -43,7 +43,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('WOMPI_PUBLIC_KEY:', WOMPI_PUBLIC_KEY ? 'Configurada' : 'NO configurada');
 		console.log('WOMPI_PRIVATE_KEY:', WOMPI_PRIVATE_KEY ? 'Configurada' : 'NO configurada');
 		console.log('WOMPI_INTEGRITY_KEY:', WOMPI_INTEGRITY_KEY ? 'Configurada' : 'NO configurada');
-		console.log('Valor de PUBLIC_KEY:', WOMPI_PUBLIC_KEY); // Log explícito del valor
+		console.log('Valor de PUBLIC_KEY:', WOMPI_PUBLIC_KEY);
 
 		// Validar que tenemos las llaves de Wompi
 		if (!WOMPI_PUBLIC_KEY || !WOMPI_PRIVATE_KEY) {
@@ -79,15 +79,13 @@ export const POST: RequestHandler = async ({ request }) => {
 		// Generar referencia única
 		const reference = generateReference();
 
-		// Para el widget de Wompi, no necesitamos crear una transacción previa
-		// Solo necesitamos devolver los datos necesarios para el widget
 		console.log('Preparando datos para el widget de Wompi:', {
 			reference,
 			amount: data.totalAmount,
 			email: data.customerData.email
 		});
 
-		// Generar firma de integridad (REQUERIDA) - Formato oficial de Wompi
+		// Generar firma de integridad (REQUERIDA)
 		const amountInCents = data.totalAmount * 100;
 		const currency = 'COP';
 
@@ -104,6 +102,41 @@ export const POST: RequestHandler = async ({ request }) => {
 			WOMPI_INTEGRITY_KEY
 		);
 
+		// 📝 LOG: Obtener acceptance token de Wompi
+		console.log('🔑 Obteniendo acceptance token de Wompi...');
+		let acceptanceToken = '';
+		try {
+			// Determinar el endpoint correcto según el tipo de llave
+			const isTestMode = WOMPI_PUBLIC_KEY?.startsWith('pub_test_');
+			const wompiBaseUrl = isTestMode 
+				? 'https://sandbox.wompi.co/v1' 
+				: 'https://production.wompi.co/v1';
+			
+			console.log('🌐 Modo:', isTestMode ? 'PRUEBA (sandbox)' : 'PRODUCCIÓN');
+			console.log('🌐 URL base:', wompiBaseUrl);
+			
+			const acceptanceResponse = await fetch(`${wompiBaseUrl}/merchants/${WOMPI_PUBLIC_KEY}`, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (acceptanceResponse.ok) {
+				const acceptanceData = await acceptanceResponse.json();
+				acceptanceToken = acceptanceData.data.presigned_acceptance.acceptance_token;
+				console.log('✅ Acceptance token obtenido:', acceptanceToken.substring(0, 20) + '...');
+			} else {
+				const errorBody = await acceptanceResponse.text();
+				console.error('⚠️ No se pudo obtener acceptance token:', acceptanceResponse.status);
+				console.error('⚠️ Respuesta del servidor:', errorBody);
+				console.error('⚠️ Esto puede causar error 403 en el widget');
+			}
+		} catch (error) {
+			console.error('❌ Error al obtener acceptance token:', error);
+			console.error('⚠️ Continuando sin acceptance token - puede causar error 403');
+		}
+
 		// Responder con los datos mínimos necesarios para el widget
 		console.log('✅ Enviando respuesta con firma:', {
 			reference,
@@ -111,7 +144,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			amountInCents,
 			currency,
 			signatureLength: integritySignature.length,
-			signature: integritySignature.substring(0, 10) + '...'
+			signature: integritySignature.substring(0, 10) + '...',
+			hasAcceptanceToken: !!acceptanceToken
 		});
 
 		return json({
@@ -121,15 +155,15 @@ export const POST: RequestHandler = async ({ request }) => {
 			amountInCents: amountInCents,
 			currency: currency,
 			signature: integritySignature,
-			// Temporalmente sin acceptance token para simplificar
-			// acceptanceToken: acceptanceToken,
+			acceptanceToken: acceptanceToken,
 			customerData: {
 				email: data.customerData.email,
 				fullName: data.customerData.fullname,
 				phoneNumber: data.customerData.phone,
 				phoneNumberPrefix: '+57'
-			},
-			redirectUrl: `${request.url.split('/api')[0]}/checkout/result?reference=${reference}`
+			}
+			// ⚠️ NO enviar redirectUrl con localhost - AWS WAF lo bloquea como SSRF
+			// El widget manejará el resultado mediante el callback en checkout.open()
 		});
 	} catch (error) {
 		console.error('Error en create-transaction:', error);

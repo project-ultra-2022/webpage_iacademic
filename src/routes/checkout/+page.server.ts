@@ -19,7 +19,7 @@ export const actions: Actions = {
 			const typeDocument = formData.get('typeDocument') as string;
 			const numberDocument = formData.get('numberDocument') as string;
 			const phone = formData.get('phone') as string;
-			const dateBirth = formData.get('dateBirth') as string; // Lo que viene del cliente
+			const dateBirth = formData.get('dateBirth') as string;
 			const habeasData = formData.get('habeasData') as string;
 			const keyBaseCourse = formData.get('keyBaseCourse') as string;
 			const date = formData.get('date') as string;
@@ -61,9 +61,9 @@ export const actions: Actions = {
 			const generatedPassword = generateRandomPassword();
 			console.log('🔑 Contraseña generada exitosamente');
 
-			// Usar variable privada - sin PUBLIC_
-			const ORCHESTRATOR_URL = env.NEXT_PUBLIC_ORCHESTRATOR_URL;
-			const endpoint = `${ORCHESTRATOR_URL}/v2/iacademic-enrollment`;
+			// Usar variable del .env (corregido)
+			const ORCHESTRATOR_URL = env.PUBLIC_ORCHESTRATOR_URL;
+			const endpoint = `https://whiteapiprod.com:3000/v2/iacademic-enrollment`;
 
 			// ✅ Estructura que coincide EXACTAMENTE con lo que espera tu API
 			const userBody = {
