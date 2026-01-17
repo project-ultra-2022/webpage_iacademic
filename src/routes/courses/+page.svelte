@@ -52,7 +52,7 @@
 			<p class="text-gray-300">Selecciona una categoría para encontrar el curso perfecto para ti</p>
 		</div>
 
-		<!-- Contenedor de categorías rediseñado -->
+		<!-- Contenedor de categoría rediseñado -->
 		<div class="-mx-4 mb-8 overflow-x-auto px-4">
 			<div class="flex min-w-max justify-center gap-4 py-4 sm:flex-wrap sm:justify-center">
 				{#each categories as { categoryName: catName, categoryKey: catKey }}
