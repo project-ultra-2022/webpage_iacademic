@@ -27,16 +27,16 @@
 		src="/background-hero.webp"
 		layout="fullWidth"
 		alt="Hero background image"
-		class="absolute inset-0 h-full w-full object-cover"
+		class="absolute inset-0 h-full w-full object-cover hero-background"
 		breakpoints={[480, 768, 1024, 1280, 1920]}
 		aspectRatio={16 / 9}
 		loading="eager"
 	/>
 
-	<!-- Figuras animadas -->
-	<!-- <div class="absolute right-0 hidden h-[60vh] w-[60vw] -translate-y-1/2 transform md:block">
-	</div> -->
-	<AbstractShapes />
+	<!-- Figuras animadas (envueltas para aplicar el mismo desplazamiento) -->
+	<div class="hero-shift-wrapper">
+		<AbstractShapes />
+	</div>
 
 	<!-- Contenido principal -->
 	<div
@@ -121,5 +121,22 @@
 	.hero-section {
 		position: relative;
 		height: 100vh;
+	}
+
+	/* Desplazamiento opcional del hero hacia la derecha. Ajustar valor si se quiere más/menos */
+	.hero-section {
+		--hero-shift: 350px; /* change this value to move more/less to the right */
+	}
+
+	.hero-background {
+		transform: translateX(var(--hero-shift));
+		will-change: transform;
+	}
+
+	.hero-shift-wrapper {
+		position: absolute;
+		inset: 0; /* fill the hero area so shapes remain anchored */
+		pointer-events: none; /* shapes should not block clicks */
+		transform: translateX(var(--hero-shift));
 	}
 </style>
